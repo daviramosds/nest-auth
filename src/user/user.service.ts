@@ -11,6 +11,9 @@ export class UserService {
 
     const { name, lastname, username, email, password } = dto;
 
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
     const user = await this.prisma.user.create({
       data: {
         name,
@@ -20,13 +23,13 @@ export class UserService {
         email,
         password,
 
-        profile: 'a',
-        banner: 'a',
+        profile: `https://source.boringavatars.com/beam/30/${username}?colors=1F271B,FFE092,FFA14C,FFC01F,EE964B`,
+        banner: `https://source.boringavatars.com/beam/30/${name}-${lastname}?colors=1F271B,FFE092,FFA14C,FFC01F,EE964B`,
 
         verification: {
           status: false,
-          token: 'a',
-          TokenExpires: new Date(),
+          token: (Math.random() * (10000 - 99999) + 99999).toString(),
+          tokenExpires: tokenExpires,
         },
       },
     });

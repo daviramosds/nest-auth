@@ -13,7 +13,7 @@ datasource db {
 type Verification {
   status       Boolean
   token        String
-  TokenExpires DateTime
+  tokenExpires DateTime
 }
 
 model User {
