@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateUserDTO) {
-    console.log(dto);
-
     const { name, lastname, username, email, password } = dto;
 
     const tokenExpires = new Date();
@@ -21,7 +20,7 @@ export class UserService {
 
         username,
         email,
-        password,
+        password: bcrypt.hashSync(password, 5), // hashing the password
 
         profile: `https://source.boringavatars.com/beam/30/${username}?colors=1F271B,FFE092,FFA14C,FFC01F,EE964B`,
         banner: `https://source.boringavatars.com/beam/30/${name}-${lastname}?colors=1F271B,FFE092,FFA14C,FFC01F,EE964B`,
