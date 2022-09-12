@@ -22,8 +22,8 @@ model User {
   name     String
   lastname String
 
-  username String
-  email    String
+  username String @unique
+  email    String @unique
   password String
 
   profile String

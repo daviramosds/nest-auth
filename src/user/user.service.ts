@@ -18,7 +18,7 @@ export class UserService {
 
         username,
         email,
-        password: 'a',
+        password,
 
         profile: 'a',
         banner: 'a',
