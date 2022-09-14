@@ -13,6 +13,17 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDTO } from './dto/login.dto';
 
+// declare global {
+//   // eslint-disable-next-line @typescript-eslint/no-namespace
+//   namespace Express {
+//     interface User {
+//       sub: string;
+//       iat: number;
+//       exp: number;
+//     }
+//   }
+// }
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -25,15 +36,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('retrieve')
   retrieve(@Req() req: Request) {
-    interface payloadInterface {
-      sub: string;
-      iat: number;
-      exp: number;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const payload: payloadInterface = req.user;
+    const payload = req.user;
     return this.authService.retrieveData(payload.sub);
   }
 }

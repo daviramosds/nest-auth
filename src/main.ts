@@ -1,31 +1,24 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import * as expressListRoutes from 'express-list-routes';
-import * as session from 'express-session';
+import { AppModule } from './app.module';
+import './auth/passport';
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface User {
+      sub: string;
+      iat: number;
+      exp: number;
+    }
+  }
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
-
-  app.use(
-    session({
-      // secret: 'my-secret',
-      // resave: false,
-      // saveUninitialized: false,
-      // name: 'my_session',
-      // cookie: {
-      //   maxAge: 60000,
-      // },
-      name: 'AUTH_SESSION',
-      secret: '123',
-      saveUninitialized: true,
-      resave: true,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
-      },
-    }),
-  );
 
   await app.listen(3333);
 
