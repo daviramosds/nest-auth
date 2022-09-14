@@ -2,18 +2,30 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as expressListRoutes from 'express-list-routes';
 import { AppModule } from './app.module';
-import './auth/passport';
+import { Prisma } from '@prisma/client';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface User {
-      sub: string;
-      iat: number;
-      exp: number;
+      id: boolean;
+      name: boolean;
+      lastname: boolean;
+      username: boolean;
+      email: boolean;
+      password: boolean;
+      profile: boolean;
+      banner: boolean;
+      verification: {
+        status: boolean;
+        token: string;
+        tokenExpires: Date;
+      };
     }
   }
 }
+
+// Prisma.UserSelect;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -41,7 +41,7 @@ export class AuthService {
     };
   }
 
-  async retrieveData(token: string) {
+  async retrieve(token: string) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: token,

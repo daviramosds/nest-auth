@@ -12,7 +12,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       signOptions: { expiresIn: '480s' },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, JwtStrategy],
   providers: [AuthService, PrismaService, JwtStrategy],
 })
 export class AuthModule {}
