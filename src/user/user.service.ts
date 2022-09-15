@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { VerifyUserDTO } from './dto/verify-user.dto';
 
 @Injectable()
 export class UserService {
@@ -12,6 +13,26 @@ export class UserService {
 
     const tokenExpires = new Date();
     tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+    const usernameExist = await this.prisma.user.findFirst({
+      where: {
+        username: username,
+      },
+    });
+
+    if (usernameExist) {
+      throw new HttpException('Username already exist', HttpStatus.CONFLICT);
+    }
+
+    const emailExist = await this.prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    if (emailExist) {
+      throw new HttpException('Email already exist', HttpStatus.CONFLICT);
+    }
 
     const user = await this.prisma.user.create({
       data: {
@@ -27,7 +48,7 @@ export class UserService {
 
         verification: {
           status: false,
-          token: (Math.random() * (10000 - 99999) + 99999).toString(),
+          token: String(Math.floor(10000 + Math.random() * 90000)),
           tokenExpires: tokenExpires,
         },
       },
@@ -36,5 +57,9 @@ export class UserService {
     delete user.password;
 
     return user;
+  }
+
+  async verify(dto: VerifyUserDTO) {
+    console.log(dto);
   }
 }
