@@ -60,6 +60,38 @@ export class UserService {
   }
 
   async verify(dto: VerifyUserDTO) {
-    console.log(dto);
+    const user = await this.prisma.user.findUnique({
+      where: {
+        username: dto.username,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const isTokenExpired = new Date() > user.verification.tokenExpires;
+
+    if (isTokenExpired)
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+
+    if (user.verification.token != dto.token) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.prisma.user.update({
+      where: {
+        username: dto.username,
+      },
+      data: {
+        verification: {
+          status: true,
+          token: user.verification.token,
+          tokenExpires: user.verification.tokenExpires,
+        },
+      },
+    });
+
+    return { message: 'user verified' };
   }
 }
