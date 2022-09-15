@@ -1,31 +1,17 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { User as UserInterface } from '@prisma/client';
 import * as expressListRoutes from 'express-list-routes';
 import { AppModule } from './app.module';
-import { Prisma } from '@prisma/client';
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
-    interface User {
-      id: boolean;
-      name: boolean;
-      lastname: boolean;
-      username: boolean;
-      email: boolean;
-      password: boolean;
-      profile: boolean;
-      banner: boolean;
-      verification: {
-        status: boolean;
-        token: string;
-        tokenExpires: Date;
-      };
-    }
+    export interface User extends UserInterface {}
   }
 }
-
-// Prisma.UserSelect;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
