@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { User as UserInterface } from '@prisma/client';
 import * as expressListRoutes from 'express-list-routes';
+import * as compression from 'compression';
 import { AppModule } from './app.module';
 
 declare global {
@@ -18,6 +19,7 @@ async function bootstrap() {
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
+  app.use(compression());
 
   await app.listen(3333);
 

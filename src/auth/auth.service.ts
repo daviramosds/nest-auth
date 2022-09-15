@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -6,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDTO } from './dto/login.dto';
+import { LoginDTO, PasswordForgotDTO } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -51,5 +52,41 @@ export class AuthService {
     delete user.password;
 
     return user;
+  }
+
+  async passwordForgot(dto: PasswordForgotDTO) {
+    const { email } = dto;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) {
+      // user doest not exist
+      throw new NotFoundException('User does not exist');
+    }
+
+    if (!user.verification.status) {
+      throw new UnauthorizedException('This user is not verified');
+    }
+
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 2);
+
+    await this.prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        passwordReset: {
+          token: String(Math.floor(10000 + Math.random() * 90000)),
+          tokenExpires: tokenExpires,
+        },
+      },
+    });
+
+    return { message: 'OK' };
   }
 }

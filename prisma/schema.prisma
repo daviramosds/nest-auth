@@ -16,6 +16,11 @@ type Verification {
   tokenExpires DateTime
 }
 
+type PasswordReset {
+  token        String
+  tokenExpires DateTime
+}
+
 model User {
   id String @id @default(uuid()) @map("_id")
 
@@ -29,7 +34,8 @@ model User {
   profile String
   banner  String
 
-  verification Verification
+  verification  Verification
+  passwordReset PasswordReset?
 
   @@map("users")
 }

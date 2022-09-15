@@ -11,7 +11,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDTO } from './dto/login.dto';
+import { LoginDTO, PasswordForgotDTO } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +30,11 @@ export class AuthController {
     delete user.password;
 
     return user;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('password/forgot')
+  forgotPassword(@Body() passwordForgotDTO: PasswordForgotDTO) {
+    return this.authService.passwordForgot(passwordForgotDTO);
   }
 }
