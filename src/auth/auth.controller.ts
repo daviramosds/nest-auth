@@ -9,10 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiHeader, ApiHeaders, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDTO, PasswordForgotDTO } from './dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -22,8 +24,11 @@ export class AuthController {
     return this.authService.login(loginDTO);
   }
 
+  @ApiHeader({
+    name: 'Authorization',
+  })
   @UseGuards(AuthGuard('jwt'))
-  @Get('retrieve')
+  @Get('')
   retrieve(@Req() req: Request) {
     const { user } = req;
 

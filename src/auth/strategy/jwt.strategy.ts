@@ -1,4 +1,4 @@
-import { Controller, Injectable } from '@nestjs/common';
+import { Controller, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -16,13 +16,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: { sub: string; iat: number; exp: number }) {
-    console.log(payload.sub);
-
     const user = await this.prisma.user.findFirst({
       where: {
         id: payload.sub,
       },
     });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
 
     return { user };
   }

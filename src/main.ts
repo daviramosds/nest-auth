@@ -4,8 +4,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { User as UserInterface } from '@prisma/client';
+
 import * as expressListRoutes from 'express-list-routes';
 import * as compression from 'compression';
+
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 
 declare global {
@@ -20,6 +24,13 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.use(compression());
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Nest Auth API')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(3333);
 
