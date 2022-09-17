@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiHeader, ApiHeaders, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
@@ -45,7 +45,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('password/reset')
-  passwordReset(@Body() PasswordResetDTO: PasswordResetDTO) {
-    return this.authService.passwordReset(PasswordResetDTO);
+  passwordReset(@Body() passwordResetDTO: PasswordResetDTO) {
+    return this.authService.passwordReset(passwordResetDTO);
   }
 }
