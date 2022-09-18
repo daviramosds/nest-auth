@@ -10,6 +10,7 @@ import { CreateUserDTO, VerifyUserDTO } from './dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { User } from '@prisma/client';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
+import { VerifyEmail2FADTO } from './dto/verify-email-2fa.dto';
 
 @Injectable()
 export class UserService {
@@ -145,5 +146,90 @@ export class UserService {
     });
 
     return { message: 'User deleted' };
+  }
+
+  async enableEmail2FA(user: User) {
+    /*
+      TODO:
+      pegar o usuario
+      ver se a 2fa esta habilitada
+      se não estiver então iniciar processo para habilitar
+      se estiver então retornar erro
+    */
+
+    /*
+      gerar um token
+      enviar email
+      pedir token
+      se token estiver correto então habilitar
+    */
+
+    if (user.twoFactorAuthentication.email.enabled) {
+      throw new HttpException('Email 2FA is already enabled', 400);
+    }
+
+    const token = String(Math.floor(10000 + Math.random() * 90000));
+
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        twoFactorAuthentication: {
+          update: {
+            email: {
+              enabled: false,
+              token: bcrypt.hashSync(token, 5),
+              tokenExpires,
+            },
+          },
+        },
+      },
+    });
+
+    this.nodemailer.sendMail({
+      to: `<${user.email}>`,
+      subject: 'Enable Email 2FA',
+      body: [
+        `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
+        `<p>Hello ${user.name}</p>`,
+        `<p>2FA CODE</p>`,
+        `<h1>${token}</h1>`,
+        `</div>`,
+      ].join('\n'),
+    });
+  }
+
+  async verifyEmail2FA(user: User, dto: VerifyEmail2FADTO) {
+    const { token } = dto;
+
+    const isTokenExpired =
+      new Date() > user.twoFactorAuthentication.email.tokenExpires;
+
+    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+
+    if (!bcrypt.compareSync(token, user.twoFactorAuthentication.email.token)) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        twoFactorAuthentication: {
+          update: {
+            email: {
+              enabled: true,
+              token: '',
+              tokenExpires: new Date(),
+            },
+          },
+        },
+      },
+    });
   }
 }

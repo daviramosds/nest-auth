@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpCode,
+  HttpStatus,
   Post,
   Req,
   UseGuards,
@@ -12,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { CreateUserDTO, VerifyUserDTO } from './dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
+import { VerifyEmail2FADTO } from './dto/verify-email-2fa.dto';
 import { UserService } from './user.service';
 
 @ApiTags('users')
@@ -34,5 +36,22 @@ export class UserController {
   @Delete()
   async delete(@Body() deleteUserDTO: DeleteUserDTO, @Req() { user }: Request) {
     return this.userService.delete(user, deleteUserDTO);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  @Post('2fa/email/enable')
+  async enableEmail2FA(@Req() req: Request) {
+    return this.userService.enableEmail2FA(req.user);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('jwt'))
+  @Post('2fa/email/verify')
+  async verifyEmail2FA(
+    @Body() verifyEmail2FADTO: VerifyEmail2FADTO,
+    @Req() req: Request,
+  ) {
+    return this.userService.verifyEmail2FA(req.user, verifyEmail2FADTO);
   }
 }
