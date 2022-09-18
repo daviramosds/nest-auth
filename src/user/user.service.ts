@@ -1,7 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDTO, VerifyUserDTO } from './dto';
+import { DeleteUserDTO } from './dto/delete-user.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -92,5 +99,19 @@ export class UserService {
     });
 
     return { message: 'user verified' };
+  }
+
+  async delete(user: User, dto: DeleteUserDTO) {
+    if (!bcrypt.compareSync(dto.password, user.password)) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    await this.prisma.user.delete({
+      where: {
+        username: user.username,
+      },
+    });
+
+    return { message: 'User deleted' };
   }
 }
