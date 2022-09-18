@@ -9,10 +9,14 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDTO, VerifyUserDTO } from './dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { User } from '@prisma/client';
+import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private nodemailer: NodemailerService,
+  ) {}
 
   async create(dto: CreateUserDTO) {
     const { name, lastname, username, email, password } = dto;
@@ -40,6 +44,8 @@ export class UserService {
       throw new HttpException('Email already exist', HttpStatus.CONFLICT);
     }
 
+    const verificationToken = String(Math.floor(10000 + Math.random() * 90000));
+
     const user = await this.prisma.user.create({
       data: {
         name,
@@ -54,7 +60,7 @@ export class UserService {
 
         verification: {
           status: false,
-          token: String(Math.floor(10000 + Math.random() * 90000)),
+          token: verificationToken,
           tokenExpires: tokenExpires,
         },
 
@@ -74,6 +80,19 @@ export class UserService {
     });
 
     delete user.password;
+
+    this.nodemailer.sendMail({
+      to: `<${email}>`,
+      subject: 'Account Created',
+      body: [
+        `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
+        `<p>Hello ${name}</p>`,
+        `<p>Your account ${email} was created, to be able to use your account, use the code below</p>`,
+        `<h1>${verificationToken}</h1>`,
+        `<p>if you have not created a account don't worry, the account will expire in few hours</p>`,
+        `</div>`,
+      ].join('\n'),
+    });
 
     return user;
   }
