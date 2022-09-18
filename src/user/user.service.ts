@@ -57,6 +57,19 @@ export class UserService {
           token: String(Math.floor(10000 + Math.random() * 90000)),
           tokenExpires: tokenExpires,
         },
+
+        twoFactorAuthentication: {
+          email: {
+            enabled: false,
+            token: '',
+            tokenExpires: new Date(),
+          },
+          totp: {
+            enabled: false,
+            token: '',
+            tokenExpires: new Date(),
+          },
+        },
       },
     });
 

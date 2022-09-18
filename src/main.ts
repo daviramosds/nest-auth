@@ -32,7 +32,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(3333);
+  await app.listen(process.env.PORT || 3333);
 
   expressListRoutes(app.getHttpServer()._events.request._router);
 }
