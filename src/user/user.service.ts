@@ -60,7 +60,7 @@ export class UserService {
 
         verification: {
           status: false,
-          token: verificationToken,
+          token: bcrypt.hashSync(verificationToken, 5),
           tokenExpires: tokenExpires,
         },
 
