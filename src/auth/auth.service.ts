@@ -78,16 +78,23 @@ export class AuthService {
       });
 
       return { message: 'To continue use 2fa' };
-
-      // generate a token
-      // generate tokenExpires
-      // send token to email
     }
 
     const payload = { sub: user.id };
 
+    const jwt = this.jwt.sign(payload);
+
+    await this.prisma.jwt.create({
+      data: {
+        jwt: jwt,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        payload: this.jwt.decode(jwt),
+      },
+    });
+
     return {
-      access_token: this.jwt.sign(payload),
+      access_token: jwt,
     };
   }
 

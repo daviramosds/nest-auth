@@ -22,6 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
+    // await this.prisma.jwt.create({
+    //   data: {
+    //     jwt: '123',
+    //     payload: payload,
+    //   },
+    // });
+
     // console.log(user);
 
     if (!user) {

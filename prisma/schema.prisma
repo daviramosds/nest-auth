@@ -51,3 +51,15 @@ model User {
 
   @@map("users")
 }
+
+type JwtPayload {
+  sub String
+  iat Int
+  exp Int
+}
+
+model jwt {
+  id      String @id @default(uuid()) @map("_id")
+  jwt     String
+  payload Json
+}
