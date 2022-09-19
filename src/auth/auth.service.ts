@@ -84,7 +84,7 @@ export class AuthService {
 
     const jwt = this.jwt.sign(payload);
 
-    await this.prisma.jwt.create({
+    this.prisma.jwt.create({
       data: {
         jwt: jwt,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
