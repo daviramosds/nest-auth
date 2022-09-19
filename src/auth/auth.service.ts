@@ -36,6 +36,36 @@ export class AuthService {
       throw new UnauthorizedException('Password is incorrect');
     }
 
+    if (user.twoFactorAuthentication.email.enabled) {
+      const token = String(Math.floor(10000 + Math.random() * 90000));
+
+      const tokenExpires = new Date();
+      tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+      await this.prisma.user.update({
+        where: {
+          username: username,
+        },
+        data: {
+          twoFactorAuthentication: {
+            update: {
+              email: {
+                enabled: user.twoFactorAuthentication.email.enabled,
+                token: token,
+                tokenExpires: tokenExpires,
+              },
+            },
+          },
+        },
+      });
+
+      return { message: 'To continue use 2fa' };
+
+      // generate a token
+      // generate tokenExpires
+      // send token to email
+    }
+
     const payload = { sub: user.id };
 
     return {
