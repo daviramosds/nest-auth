@@ -80,11 +80,9 @@ export class AuthService {
       return { message: 'To continue use 2fa' };
     }
 
-    const payload = { sub: user.id };
+    const jwt = this.jwt.sign({ sub: user.id });
 
-    const jwt = this.jwt.sign(payload);
-
-    this.prisma.jwt.create({
+    await this.prisma.jwt.create({
       data: {
         jwt: jwt,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -139,10 +137,19 @@ export class AuthService {
       },
     });
 
-    const payload = { sub: user.id };
+    const jwt = this.jwt.sign({ sub: user.id });
+
+    await this.prisma.jwt.create({
+      data: {
+        jwt: jwt,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        payload: this.jwt.decode(jwt),
+      },
+    });
 
     return {
-      access_token: this.jwt.sign(payload),
+      access_token: jwt,
     };
   }
 
