@@ -21,14 +21,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(@Body() loginDTO: LoginDTO) {
-    return this.authService.login(loginDTO);
+  login(@Body() loginDTO: LoginDTO, @Req() req: Request) {
+    return this.authService.login(loginDTO, req.socket.remoteAddress);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('login/2fa/email')
-  loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FA) {
-    return this.authService.loginEmail2FA(loginEmail2FA);
+  loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FA, @Req() req: Request) {
+    return this.authService.loginEmail2FA(
+      loginEmail2FA,
+      req.socket.remoteAddress,
+    );
   }
 
   @ApiHeader({

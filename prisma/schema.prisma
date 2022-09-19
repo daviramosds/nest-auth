@@ -52,14 +52,19 @@ model User {
   @@map("users")
 }
 
-type JwtPayload {
-  sub String
-  iat Int
-  exp Int
+type Location {
+  contry String
+  region String
+}
+
+type Device {
+  ip       String
+  location Location
 }
 
 model jwt {
   id      String @id @default(uuid()) @map("_id")
   jwt     String
   payload Json
+  device  Device
 }

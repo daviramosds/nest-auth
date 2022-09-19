@@ -11,6 +11,7 @@ import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
 import { LoginEmail2FA } from './dto/login-email-2fa.dto';
+import * as geoip from 'geoip-lite';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
     private nodemailer: NodemailerService,
   ) {}
 
-  async login(dto: LoginDTO) {
+  async login(dto: LoginDTO, ip: string) {
     const { username, password } = dto;
 
     const user = await this.prisma.user.findFirst({
@@ -82,12 +83,21 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
+    const ipInfo = geoip.lookup(ip);
+
     await this.prisma.jwt.create({
       data: {
         jwt: jwt,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         payload: this.jwt.decode(jwt),
+        device: {
+          ip: ip,
+          location: {
+            contry: ipInfo.country,
+            region: ipInfo.region,
+          },
+        },
       },
     });
 
@@ -96,7 +106,7 @@ export class AuthService {
     };
   }
 
-  async loginEmail2FA(dto: LoginEmail2FA) {
+  async loginEmail2FA(dto: LoginEmail2FA, ip: string) {
     const { username, token } = dto;
 
     const user = await this.prisma.user.findFirst({
@@ -139,12 +149,21 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
+    const ipInfo = geoip.lookup(ip);
+
     await this.prisma.jwt.create({
       data: {
         jwt: jwt,
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         payload: this.jwt.decode(jwt),
+        device: {
+          ip: ip,
+          location: {
+            contry: ipInfo.country,
+            region: ipInfo.region,
+          },
+        },
       },
     });
 
