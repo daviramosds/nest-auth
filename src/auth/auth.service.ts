@@ -7,12 +7,18 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
+import { LoginEmail2FA } from './dto/login-email-2fa.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private nodemailer: NodemailerService,
+  ) {}
 
   async login(dto: LoginDTO) {
     const { username, password } = dto;
@@ -51,12 +57,24 @@ export class AuthService {
             update: {
               email: {
                 enabled: user.twoFactorAuthentication.email.enabled,
-                token: token,
+                token: bcrypt.hashSync(token, 5),
                 tokenExpires: tokenExpires,
               },
             },
           },
         },
+      });
+
+      this.nodemailer.sendMail({
+        to: `<${user.email}>`,
+        subject: '2FA CODE',
+        body: [
+          `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
+          `<p>Hello ${user.name}</p>`,
+          `<p>2FA CODE</p>`,
+          `<h1>${token}</h1>`,
+          `</div>`,
+        ].join('\n'),
       });
 
       return { message: 'To continue use 2fa' };
@@ -65,6 +83,54 @@ export class AuthService {
       // generate tokenExpires
       // send token to email
     }
+
+    const payload = { sub: user.id };
+
+    return {
+      access_token: this.jwt.sign(payload),
+    };
+  }
+
+  async loginEmail2FA(dto: LoginEmail2FA) {
+    const { username, token } = dto;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        username,
+      },
+    });
+
+    if (!user) throw new UnauthorizedException('User doest not exist');
+
+    if (!user.twoFactorAuthentication.email.enabled) {
+      throw new UnauthorizedException('Email 2FA is not enabled');
+    }
+
+    const isTokenExpired =
+      new Date() > user.twoFactorAuthentication.email.tokenExpires;
+
+    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+
+    if (!bcrypt.compareSync(token, user.twoFactorAuthentication.email.token)) {
+      throw new UnauthorizedException('Token is incorrect');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        username: username,
+      },
+      data: {
+        twoFactorAuthentication: {
+          update: {
+            email: {
+              enabled: user.twoFactorAuthentication.email.enabled,
+              token: '',
+              tokenExpires: new Date(),
+            },
+          },
+        },
+      },
+    });
 
     const payload = { sub: user.id };
 
