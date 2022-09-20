@@ -63,8 +63,9 @@ type Device {
 }
 
 model jwt {
-  id      String @id @default(uuid()) @map("_id")
+  id      String  @id @default(uuid()) @map("_id")
   jwt     String
   payload Json
   device  Device
+  enabled Boolean @default(true)
 }

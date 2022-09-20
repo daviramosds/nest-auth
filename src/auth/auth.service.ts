@@ -22,7 +22,7 @@ export class AuthService {
   ) {}
 
   async storeJwt(jwt: string, ip: string) {
-    const ipInfo = geoip.lookup(ip);
+    const ipInfo = geoip.lookup('189.11.168.152');
 
     await this.prisma.jwt.create({
       data: {
@@ -103,7 +103,7 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
-    this.storeJwt(jwt, ip);
+    await this.storeJwt(jwt, ip);
 
     return {
       access_token: jwt,
@@ -153,7 +153,7 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
-    this.storeJwt(jwt, ip);
+    await this.storeJwt(jwt, ip);
 
     return {
       access_token: jwt,
