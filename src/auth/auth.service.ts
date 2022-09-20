@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as geoip from 'geoip-lite';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
 import { LoginEmail2FA } from './dto/login-email-2fa.dto';
-import * as geoip from 'geoip-lite';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +20,26 @@ export class AuthService {
     private jwt: JwtService,
     private nodemailer: NodemailerService,
   ) {}
+
+  async storeJwt(jwt: string, ip: string) {
+    const ipInfo = geoip.lookup(ip);
+
+    await this.prisma.jwt.create({
+      data: {
+        jwt: jwt,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        payload: this.jwt.decode(jwt),
+        device: {
+          ip: ip,
+          location: {
+            contry: ipInfo.country,
+            region: ipInfo.region,
+          },
+        },
+      },
+    });
+  }
 
   async login(dto: LoginDTO, ip: string) {
     const { username, password } = dto;
@@ -83,23 +103,7 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
-    const ipInfo = geoip.lookup(ip);
-
-    await this.prisma.jwt.create({
-      data: {
-        jwt: jwt,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        payload: this.jwt.decode(jwt),
-        device: {
-          ip: ip,
-          location: {
-            contry: ipInfo.country,
-            region: ipInfo.region,
-          },
-        },
-      },
-    });
+    this.storeJwt(jwt, ip);
 
     return {
       access_token: jwt,
@@ -149,23 +153,7 @@ export class AuthService {
 
     const jwt = this.jwt.sign({ sub: user.id });
 
-    const ipInfo = geoip.lookup(ip);
-
-    await this.prisma.jwt.create({
-      data: {
-        jwt: jwt,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        payload: this.jwt.decode(jwt),
-        device: {
-          ip: ip,
-          location: {
-            contry: ipInfo.country,
-            region: ipInfo.region,
-          },
-        },
-      },
-    });
+    this.storeJwt(jwt, ip);
 
     return {
       access_token: jwt,
