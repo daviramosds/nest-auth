@@ -5,8 +5,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { createCipheriv, randomBytes } from 'crypto';
 import * as geoip from 'geoip-lite';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,6 +21,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private nodemailer: NodemailerService,
+    private config: ConfigService,
   ) {}
 
   async storeJwt(jwt: string, ip: string) {
@@ -101,7 +104,18 @@ export class AuthService {
       return { message: 'To continue use 2fa' };
     }
 
-    const jwt = this.jwt.sign({ sub: user.id });
+    // ENCRYPT
+
+    const key = this.config.get('AES_KEY');
+    const iv = randomBytes(16);
+    const text = user.id;
+
+    const cipher = createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+    const encrypted = cipher.update(text);
+    const encryptedFinal = Buffer.concat([encrypted, cipher.final()]);
+    const store = `${iv.toString('hex')}:${encryptedFinal.toString('hex')}`;
+
+    const jwt = this.jwt.sign({ sub: store });
 
     await this.storeJwt(jwt, ip);
 
