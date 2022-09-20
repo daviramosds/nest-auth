@@ -62,10 +62,16 @@ type Device {
   location Location
 }
 
+type Payload {
+  sub String
+  iat Int
+  exp Int
+}
+
 model jwt {
   id      String  @id @default(uuid()) @map("_id")
   jwt     String
-  payload Json
+  payload Payload
   device  Device
   enabled Boolean @default(true)
 }
