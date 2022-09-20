@@ -103,18 +103,7 @@ export class AuthService {
       return { message: 'To continue use 2fa' };
     }
 
-    // ENCRYPT
-
-    // const key = this.config.get('AES_KEY');
-    // const iv = randomBytes(16);
-    // const text = user.id;
-
-    // const cipher = createCipheriv('aes-256-cbc', Buffer.from(key), iv);
-    // const encrypted = cipher.update(text);
-    // const encryptedFinal = Buffer.concat([encrypted, cipher.final()]);
-    // const store = `${iv.toString('hex')}:${encryptedFinal.toString('hex')}`;
-
-    const jwt = this.jwt.sign({ sub: user.id });
+    const jwt = await this.jwt.sign({ sub: user.id });
 
     await this.storeJwt(jwt, ip);
 

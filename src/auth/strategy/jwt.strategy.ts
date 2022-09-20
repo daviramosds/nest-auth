@@ -11,7 +11,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get('JWT_SECRET'),
+      secretOrKey: '123',
     });
   }
 
@@ -23,14 +23,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!jwt || !jwt.enabled) throw new UnauthorizedException();
-
-    // const textParts = store.split(':');
-    // const iv2 = Buffer.from(textParts.shift(), 'hex');
-    // const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-    // const decipher = createDecipheriv('aes-256-cbc', Buffer.from(key), iv2);
-    // const decrypted = decipher.update(encryptedText);
-    // const decryptedFinal = Buffer.concat([decrypted, decipher.final()]);
-    // console.log(decryptedFinal.toString());
 
     const user = await this.prisma.user.findFirst({
       where: {
