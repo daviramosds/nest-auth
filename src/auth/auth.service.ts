@@ -11,8 +11,12 @@ import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
-import { LoginEmail2FA } from './dto/login-email-2fa.dto';
+import {
+  LoginDTO,
+  PasswordForgotDTO,
+  PasswordResetDTO,
+  LoginEmail2FADTO,
+} from './dto';
 
 @Injectable()
 export class AuthService {
@@ -118,7 +122,7 @@ export class AuthService {
     };
   }
 
-  async loginEmail2FA(dto: LoginEmail2FA, ip: string) {
+  async loginEmail2FA(dto: LoginEmail2FADTO, ip: string) {
     const { username, token } = dto;
 
     const user = await this.prisma.user.findFirst({

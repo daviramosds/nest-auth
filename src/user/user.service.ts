@@ -6,11 +6,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDTO, VerifyUserDTO } from './dto';
-import { DeleteUserDTO } from './dto/delete-user.dto';
+import {
+  CreateUserDTO,
+  VerifyUserDTO,
+  VerifyEmail2FADTO,
+  DeleteUserDTO,
+} from './dto';
 import { User } from '@prisma/client';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
-import { VerifyEmail2FADTO } from './dto/verify-email-2fa.dto';
 
 @Injectable()
 export class UserService {
