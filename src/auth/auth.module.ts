@@ -7,12 +7,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 
 @Module({
-  imports: [
-    JwtModule.register({
-      secret: '123',
-      signOptions: { expiresIn: '1h' },
-    }),
-  ],
+  imports: [JwtModule.register({})],
   controllers: [AuthController, JwtStrategy],
   providers: [AuthService, PrismaService, JwtStrategy, NodemailerService],
 })

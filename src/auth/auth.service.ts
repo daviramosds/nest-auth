@@ -23,8 +23,13 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
-  async storeJwt(jwt: string, ip: string) {
-    const ipInfo = geoip.lookup('189.11.168.152');
+  async signJwt(payload: { sub: string }, ip: string): Promise<string> {
+    const jwt = await this.jwt.sign(payload, {
+      secret: this.config.get('JWT_SECRET'),
+      expiresIn: '1h',
+    });
+
+    const ipInfo = geoip.lookup(ip);
 
     await this.prisma.jwt.create({
       data: {
@@ -41,6 +46,8 @@ export class AuthService {
         },
       },
     });
+
+    return jwt;
   }
 
   async login(dto: LoginDTO, ip: string) {
@@ -65,6 +72,7 @@ export class AuthService {
       throw new UnauthorizedException('Password is incorrect');
     }
 
+    // email 2fa is enabled
     if (user.twoFactorAuthentication.email.enabled) {
       const token = String(Math.floor(10000 + Math.random() * 90000));
 
@@ -103,9 +111,7 @@ export class AuthService {
       return { message: 'To continue use 2fa' };
     }
 
-    const jwt = await this.jwt.sign({ sub: user.id });
-
-    await this.storeJwt(jwt, ip);
+    const jwt = await this.signJwt({ sub: user.id }, ip);
 
     return {
       access_token: jwt,
@@ -153,9 +159,7 @@ export class AuthService {
       },
     });
 
-    const jwt = this.jwt.sign({ sub: user.id });
-
-    await this.storeJwt(jwt, ip);
+    const jwt = await this.signJwt({ sub: user.id }, ip);
 
     return {
       access_token: jwt,
