@@ -11,9 +11,12 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
-import { CreateUserDTO, VerifyUserDTO } from './dto';
-import { DeleteUserDTO } from './dto/delete-user.dto';
-import { VerifyEmail2FADTO } from './dto/verify-email-2fa.dto';
+import {
+  CreateUserDTO,
+  VerifyUserDTO,
+  VerifyEmail2FADTO,
+  DeleteUserDTO,
+} from './dto';
 import { UserService } from './user.service';
 
 @ApiTags('users')
