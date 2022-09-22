@@ -76,8 +76,10 @@ export class AuthService {
       throw new UnauthorizedException('Password is incorrect');
     }
 
+    const $2fa = user.twoFactorAuthentication;
+
     // email 2fa is enabled
-    if (user.twoFactorAuthentication.email.enabled) {
+    if ($2fa.email.enabled) {
       const token = String(Math.floor(10000 + Math.random() * 90000));
 
       const tokenExpires = new Date();

@@ -42,13 +42,6 @@ export class UserController {
     return this.userService.delete(user, deleteUserDTO);
   }
 
-  // @HttpCode(HttpStatus.OK)
-  // @UseGuards(AuthGuard('jwt'))
-  // @Post('2fa/email/enable')
-  // async enableEmail2FA(@Req() req: Request) {
-  //   return this.userService.enableEmail2FA(req.user);
-  // }
-
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
   @Post('2fa/enable/:type')

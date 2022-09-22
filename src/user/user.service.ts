@@ -99,7 +99,7 @@ export class UserService {
       ].join('\n'),
     });
 
-    return user;
+    return { message: 'User created' };
   }
 
   async verify(dto: VerifyUserDTO) {
@@ -135,7 +135,7 @@ export class UserService {
       },
     });
 
-    return { message: 'user verified' };
+    return { message: 'User verified' };
   }
 
   async delete(user: User, dto: DeleteUserDTO) {
@@ -150,61 +150,6 @@ export class UserService {
     });
 
     return { message: 'User deleted' };
-  }
-
-  async enableEmail2FA(user: User) {
-    /*
-      TODO:
-      pegar o usuario
-      ver se a 2fa esta habilitada
-      se não estiver então iniciar processo para habilitar
-      se estiver então retornar erro
-    */
-
-    /*
-      gerar um token
-      enviar email
-      pedir token
-      se token estiver correto então habilitar
-    */
-
-    if (user.twoFactorAuthentication.email.enabled) {
-      throw new HttpException('Email 2FA is already enabled', 400);
-    }
-
-    const token = String(Math.floor(10000 + Math.random() * 90000));
-
-    const tokenExpires = new Date();
-    tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
-
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        twoFactorAuthentication: {
-          update: {
-            email: {
-              enabled: false,
-              token: bcrypt.hashSync(token, 5),
-              tokenExpires,
-            },
-          },
-        },
-      },
-    });
-
-    this.nodemailer.sendMail({
-      to: `<${user.email}>`,
-      subject: 'Enable Email 2FA',
-      body: [
-        `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
-        `<p>Hello ${user.name}</p>`,
-        `<p>2FA CODE</p>`,
-        `<h1>${token}</h1>`,
-        `</div>`,
-      ].join('\n'),
-    });
   }
 
   async enable2FA(user: User, type: string) {
@@ -335,5 +280,7 @@ export class UserService {
         },
       });
     }
+
+    return { message: `2FA with ${type} is now enabled` };
   }
 }
