@@ -4,6 +4,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -13,9 +14,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import {
   CreateUserDTO,
-  VerifyUserDTO,
-  VerifyEmail2FADTO,
   DeleteUserDTO,
+  Verify2FADTO,
+  VerifyUserDTO,
 } from './dto';
 import { UserService } from './user.service';
 
@@ -41,20 +42,28 @@ export class UserController {
     return this.userService.delete(user, deleteUserDTO);
   }
 
+  // @HttpCode(HttpStatus.OK)
+  // @UseGuards(AuthGuard('jwt'))
+  // @Post('2fa/email/enable')
+  // async enableEmail2FA(@Req() req: Request) {
+  //   return this.userService.enableEmail2FA(req.user);
+  // }
+
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  @Post('2fa/email/enable')
-  async enableEmail2FA(@Req() req: Request) {
-    return this.userService.enableEmail2FA(req.user);
+  @Post('2fa/enable/:type')
+  async enable2FA(@Req() req: Request, @Param('type') type) {
+    return this.userService.enable2FA(req.user, type);
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
-  @Post('2fa/email/verify')
-  async verifyEmail2FA(
-    @Body() verifyEmail2FADTO: VerifyEmail2FADTO,
+  @Post('2fa/verify/:type')
+  async verify2FA(
+    @Body() verify2FADTO: Verify2FADTO,
+    @Param('type') type,
     @Req() req: Request,
   ) {
-    return this.userService.verifyEmail2FA(req.user, verifyEmail2FADTO);
+    return this.userService.verify2FA(req.user, type, verify2FADTO);
   }
 }

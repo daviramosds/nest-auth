@@ -21,15 +21,21 @@ type PasswordReset {
   tokenExpires DateTime
 }
 
-type TwoFactorAuthenticationMethod {
+type Email2FA {
+  enabled      Boolean
+  token        String
+  tokenExpires DateTime
+}
+
+type TOTP2FA {
   enabled      Boolean
   token        String
   tokenExpires DateTime
 }
 
 type TwoFactorAuthentication {
-  email TwoFactorAuthenticationMethod
-  totp  TwoFactorAuthenticationMethod
+  email Email2FA
+  totp  TOTP2FA
 }
 
 model User {

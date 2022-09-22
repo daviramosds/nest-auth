@@ -1,19 +1,20 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { NodemailerService } from 'src/nodemailer/nodemailer.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateUserDTO,
-  VerifyUserDTO,
-  VerifyEmail2FADTO,
   DeleteUserDTO,
+  Verify2FADTO,
+  VerifyUserDTO,
 } from './dto';
-import { User } from '@prisma/client';
-import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 
 @Injectable()
 export class UserService {
@@ -117,7 +118,7 @@ export class UserService {
     if (isTokenExpired)
       throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
 
-    if (user.verification.token != dto.token) {
+    if (!bcrypt.compareSync(dto.token, user.verification.token)) {
       throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
     }
 
@@ -206,33 +207,83 @@ export class UserService {
     });
   }
 
-  async verifyEmail2FA(user: User, dto: VerifyEmail2FADTO) {
-    const { token } = dto;
+  async enable2FA(user: User, type: string) {
+    const $2fa = user.twoFactorAuthentication;
 
-    const isTokenExpired =
-      new Date() > user.twoFactorAuthentication.email.tokenExpires;
+    if (type != 'email' && type != 'totp') throw new BadRequestException();
 
-    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+    if (type === 'email') {
+      if ($2fa.email.enabled)
+        throw new HttpException('Email 2FA is already enabled', 400);
 
-    if (!bcrypt.compareSync(token, user.twoFactorAuthentication.email.token)) {
-      throw new UnauthorizedException('Invalid token');
-    }
+      const token = String(Math.floor(10000 + Math.random() * 90000));
 
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        twoFactorAuthentication: {
-          update: {
-            email: {
-              enabled: true,
-              token: '',
-              tokenExpires: new Date(),
+      const tokenExpires = new Date();
+      tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          twoFactorAuthentication: {
+            update: {
+              email: {
+                enabled: false,
+                token: bcrypt.hashSync(token, 5),
+                tokenExpires,
+              },
             },
           },
         },
-      },
-    });
+      });
+
+      console.log(token);
+    }
+
+    if (type == 'totp' && $2fa.totp.enabled)
+      throw new HttpException('Email 2FA is already enabled', 400);
+
+    return user;
+  }
+
+  async verify2FA(user: User, type: string, dto: Verify2FADTO) {
+    const { token } = dto;
+
+    if (type != 'email' && type != 'totp')
+      throw new HttpException('Invalid type', 400);
+
+    const $2fa = user.twoFactorAuthentication[type];
+
+    const isTokenExpired = new Date() > $2fa.tokenExpires;
+
+    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+
+    if (type == 'email') {
+      if (!bcrypt.compareSync(token, $2fa.token)) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          twoFactorAuthentication: {
+            update: {
+              [type]: {
+                enabled: true,
+                token: $2fa.token,
+                tokenExpires: new Date(),
+              },
+            },
+          },
+        },
+      });
+    }
+
+    if (type == 'totp') {
+      return 'totp';
+    }
   }
 }

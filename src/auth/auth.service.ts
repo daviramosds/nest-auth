@@ -13,9 +13,9 @@ import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   LoginDTO,
+  LoginEmail2FADTO,
   PasswordForgotDTO,
   PasswordResetDTO,
-  LoginEmail2FADTO,
 } from './dto';
 
 @Injectable()
