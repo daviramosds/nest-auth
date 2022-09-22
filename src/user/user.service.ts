@@ -278,6 +278,8 @@ export class UserService {
     const $2fa = user.twoFactorAuthentication.email;
 
     if (type == 'email') {
+      if (!$2fa.token) throw new UnauthorizedException('Invalid token');
+
       const isTokenExpired = new Date() > $2fa.tokenExpires;
 
       if (isTokenExpired) throw new UnauthorizedException('Invalid token');
@@ -305,7 +307,33 @@ export class UserService {
     }
 
     if (type == 'totp') {
-      return 'totp';
+      const $2fa = user.twoFactorAuthentication.totp;
+      if (!$2fa.secret) throw new UnauthorizedException('Invalid token');
+
+      if (
+        !authenticator.verify({
+          token,
+          secret: user.twoFactorAuthentication.totp.secret,
+        })
+      ) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          twoFactorAuthentication: {
+            update: {
+              totp: {
+                enabled: true,
+                secret: $2fa.secret,
+              },
+            },
+          },
+        },
+      });
     }
   }
 }
