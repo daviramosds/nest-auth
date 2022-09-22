@@ -78,8 +78,7 @@ export class UserService {
           },
           totp: {
             enabled: false,
-            token: '',
-            tokenExpires: new Date(),
+            secret: '',
           },
         },
       },
@@ -239,7 +238,7 @@ export class UserService {
       });
 
       console.log(token);
-      return;
+      return { message: 'done' };
     }
 
     if (type == 'totp') {
@@ -257,15 +256,14 @@ export class UserService {
             update: {
               totp: {
                 enabled: false,
-                token: secret,
-                tokenExpires: new Date(),
+                secret: secret,
               },
             },
           },
         },
       });
 
-      return;
+      return { message: 'done' };
     }
 
     throw new BadRequestException();
@@ -277,13 +275,13 @@ export class UserService {
     if (type != 'email' && type != 'totp')
       throw new HttpException('Invalid type', 400);
 
-    const $2fa = user.twoFactorAuthentication[type];
-
-    const isTokenExpired = new Date() > $2fa.tokenExpires;
-
-    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+    const $2fa = user.twoFactorAuthentication.email;
 
     if (type == 'email') {
+      const isTokenExpired = new Date() > $2fa.tokenExpires;
+
+      if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+
       if (!bcrypt.compareSync(token, $2fa.token)) {
         throw new UnauthorizedException('Invalid token');
       }

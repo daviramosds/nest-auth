@@ -28,9 +28,8 @@ type Email2FA {
 }
 
 type TOTP2FA {
-  enabled      Boolean
-  token        String
-  tokenExpires DateTime
+  enabled Boolean
+  secret  String
 }
 
 type TwoFactorAuthentication {
