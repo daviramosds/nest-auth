@@ -9,6 +9,7 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { authenticator } from 'otplib';
 import {
   CreateUserDTO,
   DeleteUserDTO,
@@ -209,8 +210,7 @@ export class UserService {
 
   async enable2FA(user: User, type: string) {
     const $2fa = user.twoFactorAuthentication;
-
-    if (type != 'email' && type != 'totp') throw new BadRequestException();
+    console.log(type);
 
     if (type === 'email') {
       if ($2fa.email.enabled)
@@ -239,12 +239,36 @@ export class UserService {
       });
 
       console.log(token);
+      return;
     }
 
-    if (type == 'totp' && $2fa.totp.enabled)
-      throw new HttpException('Email 2FA is already enabled', 400);
+    if (type == 'totp') {
+      if ($2fa.totp.enabled)
+        throw new HttpException('TOTP 2FA is already enabled', 400);
 
-    return user;
+      const secret = authenticator.generateSecret();
+
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          twoFactorAuthentication: {
+            update: {
+              totp: {
+                enabled: false,
+                token: secret,
+                tokenExpires: new Date(),
+              },
+            },
+          },
+        },
+      });
+
+      return;
+    }
+
+    throw new BadRequestException();
   }
 
   async verify2FA(user: User, type: string, dto: Verify2FADTO) {
