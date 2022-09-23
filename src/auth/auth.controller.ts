@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -18,6 +19,7 @@ import {
   PasswordForgotDTO,
   PasswordResetDTO,
 } from './dto';
+import { Login2FADTO } from './dto/login-2fa.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -29,23 +31,28 @@ export class AuthController {
     return this.authService.login(loginDTO, req.socket.remoteAddress);
   }
 
+  @HttpCode(HttpStatus.OK)
+  @Post('login/2fa/:type')
+  login2FA(
+    @Body() login2FADTO: Login2FADTO,
+    @Req() req: Request,
+    @Param('type') type,
+  ) {
+    return this.authService.login2FA(
+      login2FADTO,
+      type,
+      req.socket.remoteAddress,
+    );
+  }
+
   // @HttpCode(HttpStatus.OK)
-  // @Post('login/2fa/:type')
-  // login2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
+  // @Post('login/2fa/email')
+  // loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
   //   return this.authService.loginEmail2FA(
   //     loginEmail2FA,
   //     req.socket.remoteAddress,
   //   );
   // }
-
-  @HttpCode(HttpStatus.OK)
-  @Post('login/2fa/email')
-  loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
-    return this.authService.loginEmail2FA(
-      loginEmail2FA,
-      req.socket.remoteAddress,
-    );
-  }
 
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()

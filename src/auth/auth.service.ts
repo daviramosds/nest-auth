@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -7,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
@@ -17,6 +19,7 @@ import {
   PasswordForgotDTO,
   PasswordResetDTO,
 } from './dto';
+import { Login2FADTO } from './dto/login-2fa.dto';
 
 @Injectable()
 export class AuthService {
@@ -54,6 +57,17 @@ export class AuthService {
     return jwt;
   }
 
+  validateUser(user: User) {
+    if (!user) {
+      // user doest not exist
+      throw new NotFoundException('User does not exist');
+    }
+
+    if (!user.verification.status) {
+      throw new UnauthorizedException('This user is not verified');
+    }
+  }
+
   async login(dto: LoginDTO, ip: string) {
     const { username, password } = dto;
 
@@ -63,14 +77,7 @@ export class AuthService {
       },
     });
 
-    if (!user) {
-      // user doest not exist
-      throw new NotFoundException('User does not exist');
-    }
-
-    if (!user.verification.status) {
-      throw new UnauthorizedException('This user is not verified');
-    }
+    this.validateUser(user);
 
     if (!bcrypt.compareSync(password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
@@ -85,7 +92,10 @@ export class AuthService {
       if ($2fa.email.enabled) types2FA.push('email');
       if ($2fa.totp.enabled) types2FA.push('totp');
 
-      return { message: 'Please provide a twoFactor', twoFactor: types2FA };
+      throw new BadRequestException({
+        message: 'Please provide a twoFactor',
+        twoFactor: types2FA,
+      });
     }
 
     if (twoFactor === 'email') {
@@ -139,53 +149,71 @@ export class AuthService {
     };
   }
 
-  async loginEmail2FA(dto: LoginEmail2FADTO, ip: string) {
-    const { username, token } = dto;
+  async login2FA(dto: Login2FADTO, type: string, ip: string) {
+    const { username, password, token } = dto;
 
     const user = await this.prisma.user.findFirst({
       where: {
-        username,
-      },
-    });
-
-    if (!user) throw new UnauthorizedException('User doest not exist');
-
-    if (!user.twoFactorAuthentication.email.enabled) {
-      throw new UnauthorizedException('Email 2FA is not enabled');
-    }
-
-    const isTokenExpired =
-      new Date() > user.twoFactorAuthentication.email.tokenExpires;
-
-    if (isTokenExpired) throw new UnauthorizedException('Invalid token');
-
-    if (!bcrypt.compareSync(token, user.twoFactorAuthentication.email.token)) {
-      throw new UnauthorizedException('Token is incorrect');
-    }
-
-    await this.prisma.user.update({
-      where: {
         username: username,
       },
-      data: {
-        twoFactorAuthentication: {
-          update: {
-            email: {
-              enabled: user.twoFactorAuthentication.email.enabled,
-              token: '',
-              tokenExpires: new Date(),
-            },
-          },
-        },
-      },
     });
 
-    const jwt = await this.signJwt({ sub: user.id }, ip);
+    this.validateUser(user);
 
-    return {
-      access_token: jwt,
-    };
+    if (!bcrypt.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    return dto;
   }
+
+  // async loginEmail2FA(dto: LoginEmail2FADTO, ip: string) {
+  //   const { username, token } = dto;
+
+  //   const user = await this.prisma.user.findFirst({
+  //     where: {
+  //       username,
+  //     },
+  //   });
+
+  //   if (!user) throw new UnauthorizedException('User doest not exist');
+
+  //   if (!user.twoFactorAuthentication.email.enabled) {
+  //     throw new UnauthorizedException('Email 2FA is not enabled');
+  //   }
+
+  //   const isTokenExpired =
+  //     new Date() > user.twoFactorAuthentication.email.tokenExpires;
+
+  //   if (isTokenExpired) throw new UnauthorizedException('Invalid token');
+
+  //   if (!bcrypt.compareSync(token, user.twoFactorAuthentication.email.token)) {
+  //     throw new UnauthorizedException('Token is incorrect');
+  //   }
+
+  //   await this.prisma.user.update({
+  //     where: {
+  //       username: username,
+  //     },
+  //     data: {
+  //       twoFactorAuthentication: {
+  //         update: {
+  //           email: {
+  //             enabled: user.twoFactorAuthentication.email.enabled,
+  //             token: '',
+  //             tokenExpires: new Date(),
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+
+  //   const jwt = await this.signJwt({ sub: user.id }, ip);
+
+  //   return {
+  //     access_token: jwt,
+  //   };
+  // }
 
   async retrieve(token: string) {
     const user = await this.prisma.user.findUnique({
