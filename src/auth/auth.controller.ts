@@ -13,12 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
-import {
-  LoginDTO,
-  LoginEmail2FADTO,
-  PasswordForgotDTO,
-  PasswordResetDTO,
-} from './dto';
+import { LoginDTO, PasswordForgotDTO, PasswordResetDTO } from './dto';
 import { Login2FADTO } from './dto/login-2fa.dto';
 
 @ApiTags('auth')
