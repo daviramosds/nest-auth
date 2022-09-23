@@ -77,44 +77,59 @@ export class AuthService {
     }
 
     const $2fa = user.twoFactorAuthentication;
+    const { twoFactor } = dto;
 
-    // email 2fa is enabled
-    if ($2fa.email.enabled) {
-      const token = String(Math.floor(10000 + Math.random() * 90000));
+    if (!twoFactor && ($2fa.email.enabled || $2fa.totp.enabled)) {
+      const types2FA = [];
 
-      const tokenExpires = new Date();
-      tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+      if ($2fa.email.enabled) types2FA.push('email');
+      if ($2fa.totp.enabled) types2FA.push('totp');
 
-      await this.prisma.user.update({
-        where: {
-          username: username,
-        },
-        data: {
-          twoFactorAuthentication: {
-            update: {
-              email: {
-                enabled: user.twoFactorAuthentication.email.enabled,
-                token: bcrypt.hashSync(token, 5),
-                tokenExpires: tokenExpires,
-              },
-            },
-          },
-        },
-      });
+      return { message: 'Please provide a twoFactor', twoFactor: types2FA };
+    }
 
-      this.nodemailer.sendMail({
-        to: `<${user.email}>`,
-        subject: '2FA CODE',
-        body: [
-          `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
-          `<p>Hello ${user.name}</p>`,
-          `<p>2FA CODE</p>`,
-          `<h1>${token}</h1>`,
-          `</div>`,
-        ].join('\n'),
-      });
+    if (twoFactor === 'email') {
+      return { twoFactor: 'email' };
 
-      return { message: 'To continue use 2fa' };
+      // const token = String(Math.floor(10000 + Math.random() * 90000));
+
+      // const tokenExpires = new Date();
+      // tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+      // await this.prisma.user.update({
+      //   where: {
+      //     username: username,
+      //   },
+      //   data: {
+      //     twoFactorAuthentication: {
+      //       update: {
+      //         email: {
+      //           enabled: user.twoFactorAuthentication.email.enabled,
+      //           token: bcrypt.hashSync(token, 5),
+      //           tokenExpires: tokenExpires,
+      //         },
+      //       },
+      //     },
+      //   },
+      // });
+
+      // this.nodemailer.sendMail({
+      //   to: `<${user.email}>`,
+      //   subject: '2FA CODE',
+      //   body: [
+      //     `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
+      //     `<p>Hello ${user.name}</p>`,
+      //     `<p>2FA CODE</p>`,
+      //     `<h1>${token}</h1>`,
+      //     `</div>`,
+      //   ].join('\n'),
+      // });
+
+      // return { message: 'To continue use email 2fa' };
+    }
+
+    if (twoFactor === 'totp') {
+      return { twoFactor: 'totp' };
     }
 
     const jwt = await this.signJwt({ sub: user.id }, ip);

@@ -9,14 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
 import {
   LoginDTO,
+  LoginEmail2FADTO,
   PasswordForgotDTO,
   PasswordResetDTO,
-  LoginEmail2FADTO,
 } from './dto';
 
 @ApiTags('auth')
@@ -29,6 +29,15 @@ export class AuthController {
     return this.authService.login(loginDTO, req.socket.remoteAddress);
   }
 
+  // @HttpCode(HttpStatus.OK)
+  // @Post('login/2fa/:type')
+  // login2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
+  //   return this.authService.loginEmail2FA(
+  //     loginEmail2FA,
+  //     req.socket.remoteAddress,
+  //   );
+  // }
+
   @HttpCode(HttpStatus.OK)
   @Post('login/2fa/email')
   loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
@@ -38,10 +47,8 @@ export class AuthController {
     );
   }
 
-  @ApiHeader({
-    name: 'Authorization',
-  })
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Get('')
   retrieve(@Req() req: Request) {
     const { user } = req;

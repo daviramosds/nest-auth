@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import {
   CreateUserDTO,
@@ -26,26 +26,28 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDTO: CreateUserDTO) {
+  create(@Body() createUserDTO: CreateUserDTO) {
     return this.userService.create(createUserDTO);
   }
 
   @Post('verify')
-  async verify(@Body() verifyUserDTO: VerifyUserDTO) {
+  verify(@Body() verifyUserDTO: VerifyUserDTO) {
     return this.userService.verify(verifyUserDTO);
   }
 
+  @ApiBearerAuth()
   @HttpCode(204)
   @UseGuards(AuthGuard('jwt'))
   @Delete()
-  async delete(@Body() deleteUserDTO: DeleteUserDTO, @Req() { user }: Request) {
+  delete(@Body() deleteUserDTO: DeleteUserDTO, @Req() { user }: Request) {
     return this.userService.delete(user, deleteUserDTO);
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Post('2fa/enable/:type')
-  async enable2FA(@Req() req: Request, @Param('type') type) {
+  enable2FA(@Req() req: Request, @Param('type') type) {
     return this.userService.enable2FA(req.user, type);
   }
 
