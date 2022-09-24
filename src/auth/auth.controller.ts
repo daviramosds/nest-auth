@@ -40,15 +40,6 @@ export class AuthController {
     );
   }
 
-  // @HttpCode(HttpStatus.OK)
-  // @Post('login/2fa/email')
-  // loginEmail2FA(@Body() loginEmail2FA: LoginEmail2FADTO, @Req() req: Request) {
-  //   return this.authService.loginEmail2FA(
-  //     loginEmail2FA,
-  //     req.socket.remoteAddress,
-  //   );
-  // }
-
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @Get('')

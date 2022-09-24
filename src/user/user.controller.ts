@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -60,5 +61,11 @@ export class UserController {
     @Req() req: Request,
   ) {
     return this.userService.verify2FA(req.user, type, verify2FADTO);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/2fa/disable/:type')
+  async disable2FA(@Req() req: Request, @Param('type') type) {
+    return this.userService.disable2FA(req.user, type);
   }
 }

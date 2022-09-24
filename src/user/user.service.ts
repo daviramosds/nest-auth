@@ -283,4 +283,29 @@ export class UserService {
 
     return { message: `2FA with ${type} is now enabled` };
   }
+
+  async disable2FA(user: User, type: string) {
+    if (type != 'email' && type != 'totp') throw new BadRequestException();
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        twoFactorAuthentication: {
+          update: {
+            [type]: {
+              update: {
+                enabled: false,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      message: `2FA with ${type} is disabled`,
+    };
+  }
 }
