@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
+import { authenticator } from 'otplib';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -122,21 +123,19 @@ export class AuthService {
 
       console.log(token);
 
-      return { twoFactor: 'email' };
+      this.nodemailer.sendMail({
+        to: `<${user.email}>`,
+        subject: '2FA CODE',
+        body: [
+          `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
+          `<p>Hello ${user.name}</p>`,
+          `<p>2FA CODE</p>`,
+          `<h1>${token}</h1>`,
+          `</div>`,
+        ].join('\n'),
+      });
 
-      // this.nodemailer.sendMail({
-      //   to: `<${user.email}>`,
-      //   subject: '2FA CODE',
-      //   body: [
-      //     `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
-      //     `<p>Hello ${user.name}</p>`,
-      //     `<p>2FA CODE</p>`,
-      //     `<h1>${token}</h1>`,
-      //     `</div>`,
-      //   ].join('\n'),
-      // });
-
-      // return { message: 'To continue use email 2fa' };
+      return { message: 'To continue use email 2fa' };
     }
 
     if (twoFactor === 'totp') {
@@ -192,6 +191,19 @@ export class AuthService {
           },
         },
       });
+    }
+
+    if (type === 'totp') {
+      if (!$2fa.totp.secret) throw new UnauthorizedException('Invalid token');
+
+      if (
+        !authenticator.verify({
+          token,
+          secret: user.twoFactorAuthentication.totp.secret,
+        })
+      ) {
+        throw new UnauthorizedException('Invalid token');
+      }
     }
 
     const jwt = await this.signJwt({ sub: user.id }, ip);
