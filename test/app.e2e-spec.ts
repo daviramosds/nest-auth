@@ -24,8 +24,6 @@ describe('AppController (e2e)', () => {
     password: faker.internet.password(),
   };
 
-  let user;
-
   let verificationToken;
 
   let loginJWT;
@@ -93,6 +91,8 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  // TODO: LOGIN WITH EMAIL 2FA
+
   it('should disable email 2FA', async () => {
     const user = await prismaService.user.findFirst({
       where: {
@@ -128,6 +128,8 @@ describe('AppController (e2e)', () => {
       token: token,
     });
   });
+
+  // TODO: LOGIN WITH TOTP 2FA
 
   it('should disable email 2FA', async () => {
     const user = await prismaService.user.findFirst({
