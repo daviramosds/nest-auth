@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { NodemailerService } from 'src/nodemailer/nodemailer.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { NodemailerService } from '../nodemailer/nodemailer.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { authenticator } from 'otplib';
 import {
   CreateUserDTO,

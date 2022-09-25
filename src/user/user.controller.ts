@@ -63,6 +63,7 @@ export class UserController {
     return this.userService.verify2FA(req.user, type, verify2FADTO);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch('/2fa/disable/:type')
   async disable2FA(@Req() req: Request, @Param('type') type) {
