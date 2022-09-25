@@ -91,7 +91,27 @@ describe('AppController (e2e)', () => {
     });
   });
 
-  // TODO: LOGIN WITH EMAIL 2FA
+  it('should login with email 2FA', async () => {
+    const { token } = await authService.login(
+      {
+        username: createdUser.username,
+        password: createdUser.password,
+        twoFactor: 'email',
+      },
+      await faker.internet.ipv4(),
+      true,
+    );
+
+    await authService.login2FA(
+      {
+        username: createdUser.username,
+        password: createdUser.password,
+        token: token,
+      },
+      'email',
+      await faker.internet.ipv4(),
+    );
+  });
 
   it('should disable email 2FA', async () => {
     const user = await prismaService.user.findFirst({
@@ -129,6 +149,20 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  it('should login with totp 2FA', async () => {
+    const token = authenticator.generate(verifyTOTP2FASecret);
+
+    await authService.login2FA(
+      {
+        username: createdUser.username,
+        password: createdUser.password,
+        token: token,
+      },
+      'totp',
+      await faker.internet.ipv4(),
+    );
+  });
+
   // TODO: LOGIN WITH TOTP 2FA
 
   it('should disable email 2FA', async () => {
@@ -139,6 +173,16 @@ describe('AppController (e2e)', () => {
     });
 
     await userService.disable2FA(user, 'totp');
+  });
+
+  it('should delete the user', async () => {
+    const user = await prismaService.user.findFirst({
+      where: {
+        email: createdUser.email,
+      },
+    });
+
+    await userService.delete(user, { password: createdUser.password });
   });
 
   /*

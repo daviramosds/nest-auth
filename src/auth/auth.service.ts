@@ -68,7 +68,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDTO, ip: string) {
+  async login(dto: LoginDTO, ip: string, test?: boolean) {
     const { username, password } = dto;
 
     const user = await this.prisma.user.findFirst({
@@ -121,8 +121,6 @@ export class AuthService {
         },
       });
 
-      console.log(token);
-
       this.nodemailer.sendMail({
         to: `<${user.email}>`,
         subject: '2FA CODE',
@@ -134,6 +132,8 @@ export class AuthService {
           `</div>`,
         ].join('\n'),
       });
+
+      if (test) return { message: 'To continue use email 2fa', token: token };
 
       return { message: 'To continue use email 2fa' };
     }
