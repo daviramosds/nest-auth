@@ -16,5 +16,5 @@ export class LoginDTO {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  twoFactor: string;
+  twoFactor?: string;
 }

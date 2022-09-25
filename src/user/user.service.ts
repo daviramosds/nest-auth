@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { authenticator } from 'otplib';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { authenticator } from 'otplib';
 import {
   CreateUserDTO,
   DeleteUserDTO,
@@ -100,7 +100,7 @@ export class UserService {
     });
 
     if (test) {
-      return { message: 'User created', token: verificationToken };
+      return { message: 'User created', token: verificationToken, user: user };
     }
 
     return { message: 'User created' };
@@ -156,9 +156,8 @@ export class UserService {
     return { message: 'User deleted' };
   }
 
-  async enable2FA(user: User, type: string) {
+  async enable2FA(user: User, type: string, test?: boolean) {
     const $2fa = user.twoFactorAuthentication;
-    console.log(type);
 
     if (type === 'email') {
       if ($2fa.email.enabled)
@@ -186,7 +185,8 @@ export class UserService {
         },
       });
 
-      console.log(token);
+      if (test) return { message: 'done', token: token };
+
       return { message: 'done' };
     }
 
