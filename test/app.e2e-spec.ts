@@ -2,13 +2,13 @@ import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { authenticator } from 'otplib';
+import { AuthService } from '../src/auth/auth.service';
 import { NodemailerService } from '../src/nodemailer/nodemailer.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { UserController } from '../src/user/user.controller';
 import { UserService } from '../src/user/user.service';
-import { AuthController } from '../src/auth/auth.controller';
 import { AppModule } from './../src/app.module';
-import { AuthService } from '../src/auth/auth.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -31,6 +31,7 @@ describe('AppController (e2e)', () => {
   let loginJWT;
 
   let verifyEmail2FAToken;
+  let verifyTOTP2FASecret;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -102,18 +103,47 @@ describe('AppController (e2e)', () => {
     await userService.disable2FA(user, 'email');
   });
 
+  it('shoud enable totp 2FA', async () => {
+    const user = await prismaService.user.findFirst({
+      where: {
+        email: createdUser.email,
+      },
+    });
+
+    const { secret } = await userService.enable2FA(user, 'totp', true);
+    verifyTOTP2FASecret = secret;
+  });
+
+  it('shoud verify totp 2FA', async () => {
+    const user = await prismaService.user.findFirst({
+      where: {
+        email: createdUser.email,
+      },
+    });
+
+    const token = authenticator.generate(verifyTOTP2FASecret);
+
+    await userService.verify2FA(user, 'totp', {
+      username: createdUser.username,
+      token: token,
+    });
+  });
+
+  it('should disable email 2FA', async () => {
+    const user = await prismaService.user.findFirst({
+      where: {
+        email: createdUser.email,
+      },
+    });
+
+    await userService.disable2FA(user, 'totp');
+  });
+
   /*
     TODO:
     - get user data
-    - enable email 2FA
-    - enable totp 2FA
-    - login with email 2FA
-    - login with totp 2FA
-    - disable email 2FA
-    - disable totp 2FA
     - password forgot
     - password reset
     - delete user
-
   */
 });

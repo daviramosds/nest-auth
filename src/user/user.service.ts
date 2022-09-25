@@ -212,6 +212,8 @@ export class UserService {
         },
       });
 
+      if (test) return { message: 'done', secret: secret };
+
       return { message: 'done' };
     }
 
