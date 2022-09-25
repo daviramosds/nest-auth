@@ -24,7 +24,7 @@ export class UserService {
     private nodemailer: NodemailerService,
   ) {}
 
-  async create(dto: CreateUserDTO) {
+  async create(dto: CreateUserDTO, test: boolean) {
     const { name, lastname, username, email, password } = dto;
 
     const tokenExpires = new Date();
@@ -98,6 +98,10 @@ export class UserService {
         `</div>`,
       ].join('\n'),
     });
+
+    if (test) {
+      return { message: 'User created', token: verificationToken };
+    }
 
     return { message: 'User created' };
   }

@@ -27,8 +27,8 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() createUserDTO: CreateUserDTO) {
-    return this.userService.create(createUserDTO);
+  create(@Body() createUserDTO: CreateUserDTO, test?: boolean) {
+    return this.userService.create(createUserDTO, test);
   }
 
   @Post('verify')

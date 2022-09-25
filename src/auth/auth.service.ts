@@ -12,8 +12,8 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
 import { authenticator } from 'otplib';
-import { NodemailerService } from 'src/nodemailer/nodemailer.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { NodemailerService } from '../nodemailer/nodemailer.service';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   LoginDTO,
   PasswordForgotDTO,
