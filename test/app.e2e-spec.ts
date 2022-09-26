@@ -163,8 +163,6 @@ describe('AppController (e2e)', () => {
     );
   });
 
-  // TODO: LOGIN WITH TOTP 2FA
-
   it('should disable email 2FA', async () => {
     const user = await prismaService.user.findFirst({
       where: {
@@ -173,6 +171,10 @@ describe('AppController (e2e)', () => {
     });
 
     await userService.disable2FA(user, 'totp');
+  });
+
+  it('should get the user data', async () => {
+    await authService.retrieve(loginJWT);
   });
 
   it('should delete the user', async () => {
@@ -190,6 +192,5 @@ describe('AppController (e2e)', () => {
     - get user data
     - password forgot
     - password reset
-    - delete user
   */
 });
