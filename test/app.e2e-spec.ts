@@ -187,6 +187,10 @@ describe('AppController (e2e)', () => {
     await userService.delete(user, { password: createdUser.password });
   });
 
+  it('should start password forgot', async () => {
+    authService.passwordForgot({ username: createdUser.username });
+  });
+
   /*
     TODO:
     - get user data
