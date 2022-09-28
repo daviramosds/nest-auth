@@ -28,6 +28,7 @@ describe('AppController (e2e)', () => {
   };
 
   let verificationToken;
+  let passwordResetToken;
 
   let loginJWT;
 
@@ -186,7 +187,14 @@ describe('AppController (e2e)', () => {
   });
 
   it('should start password forgot', async () => {
-    authService.passwordForgot({ username: createdUser.username });
+    const { token } = await authService.passwordForgot(
+      {
+        username: createdUser.username,
+      },
+      true,
+    );
+
+    passwordResetToken = token;
   });
 
   it('should delete the user', async () => {

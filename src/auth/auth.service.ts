@@ -227,7 +227,7 @@ export class AuthService {
     return user;
   }
 
-  async passwordForgot(dto: PasswordForgotDTO) {
+  async passwordForgot(dto: PasswordForgotDTO, test?: boolean) {
     const { username } = dto;
 
     const user = await this.prisma.user.findFirst({
@@ -262,6 +262,7 @@ export class AuthService {
       },
     });
 
+    if (test) return { message: 'OK', token: token };
     return { message: 'OK' };
   }
 
