@@ -213,10 +213,12 @@ export class AuthService {
     };
   }
 
-  async retrieve(token: string) {
+  async retrieve(id: string) {
+    console.log(id);
+
     const user = await this.prisma.user.findUnique({
       where: {
-        id: token,
+        id: id,
       },
     });
 
@@ -243,6 +245,8 @@ export class AuthService {
       throw new UnauthorizedException('This user is not verified');
     }
 
+    const token = String(Math.floor(10000 + Math.random() * 90000));
+
     const tokenExpires = new Date();
     tokenExpires.setHours(tokenExpires.getHours() + 2);
 
@@ -252,7 +256,7 @@ export class AuthService {
       },
       data: {
         passwordReset: {
-          token: String(Math.floor(10000 + Math.random() * 90000)),
+          token: token,
           tokenExpires: tokenExpires,
         },
       },

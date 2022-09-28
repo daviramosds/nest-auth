@@ -1,7 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Payload } from '@prisma/client';
 import { authenticator } from 'otplib';
 import { AuthService } from '../src/auth/auth.service';
 import { NodemailerService } from '../src/nodemailer/nodemailer.service';
@@ -15,6 +17,7 @@ describe('AppController (e2e)', () => {
   let userService: UserService;
   let authService: AuthService;
   let prismaService: PrismaService;
+  let jwtService: JwtService;
 
   const createdUser = {
     name: faker.name.firstName(),
@@ -41,6 +44,7 @@ describe('AppController (e2e)', () => {
     userService = moduleFixture.get<UserService>(UserService);
     authService = moduleFixture.get<AuthService>(AuthService);
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
+    jwtService = moduleFixture.get<JwtService>(JwtService);
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -61,7 +65,7 @@ describe('AppController (e2e)', () => {
   it('should login the user', async () => {
     const { access_token } = await authService.login(
       { username: createdUser.username, password: createdUser.password },
-      faker.internet.ipv4(),
+      await faker.internet.ipv4(),
     );
 
     loginJWT = access_token;
@@ -174,7 +178,15 @@ describe('AppController (e2e)', () => {
   });
 
   it('should get the user data', async () => {
-    await authService.retrieve(loginJWT);
+    const payload: Payload = await jwtService.verify(loginJWT, {
+      secret: process.env.JWT_SECRET,
+    });
+
+    await authService.retrieve(payload.sub);
+  });
+
+  it('should start password forgot', async () => {
+    authService.passwordForgot({ username: createdUser.username });
   });
 
   it('should delete the user', async () => {
@@ -185,10 +197,6 @@ describe('AppController (e2e)', () => {
     });
 
     await userService.delete(user, { password: createdUser.password });
-  });
-
-  it('should start password forgot', async () => {
-    authService.passwordForgot({ username: createdUser.username });
   });
 
   /*
