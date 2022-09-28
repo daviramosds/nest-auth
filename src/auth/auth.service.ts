@@ -36,7 +36,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
-    const ipInfo = geoip.lookup(ip);
+    const ipInfo = await geoip.lookup(ip);
 
     await this.prisma.jwt.create({
       data: {
