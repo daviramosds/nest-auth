@@ -197,6 +197,14 @@ describe('AppController (e2e)', () => {
     passwordResetToken = token;
   });
 
+  it('should reset the password', async () => {
+    await authService.passwordReset({
+      username: createdUser.username,
+      token: passwordResetToken,
+      password: '123',
+    });
+  });
+
   it('should delete the user', async () => {
     const user = await prismaService.user.findFirst({
       where: {
@@ -206,11 +214,4 @@ describe('AppController (e2e)', () => {
 
     await userService.delete(user, { password: createdUser.password });
   });
-
-  /*
-    TODO:
-    - get user data
-    - password forgot
-    - password reset
-  */
 });
