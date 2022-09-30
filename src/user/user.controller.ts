@@ -16,9 +16,9 @@ import { Request } from 'express';
 import {
   CreateUserDTO,
   DeleteUserDTO,
+  UpdateEmailDTO,
   Verify2FADTO,
   VerifyUserDTO,
-  UpdateEmailDTO,
 } from './dto';
 import { UserService } from './user.service';
 
@@ -74,7 +74,10 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch('/email')
-  updateEmail(@Body() updateEmailDTO: UpdateEmailDTO) {
-    return this.userService.updateEmail(updateEmailDTO);
+  updateEmail(
+    @Req() { user }: Request,
+    @Body() updateEmailDTO: UpdateEmailDTO,
+  ) {
+    return this.userService.updateEmail(user, updateEmailDTO);
   }
 }

@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -24,6 +25,17 @@ export class UserService {
     private prisma: PrismaService,
     private nodemailer: NodemailerService,
   ) {}
+
+  validateUser(user: User) {
+    if (!user) {
+      // user doest not exist
+      throw new NotFoundException('User does not exist');
+    }
+
+    if (!user.verification.status) {
+      throw new UnauthorizedException('This user is not verified');
+    }
+  }
 
   async create(dto: CreateUserDTO, test: boolean) {
     const { name, lastname, username, email, password } = dto;
@@ -322,7 +334,26 @@ export class UserService {
     };
   }
 
-  async updateEmail(dto: UpdateEmailDTO) {
-    return dto;
+  async updateEmail(user: User, dto: UpdateEmailDTO) {
+    const { email, password } = dto;
+
+    this.validateUser(user);
+
+    if (!bcrypt.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        email: user.email,
+      },
+      data: {
+        email: email,
+      },
+    });
+
+    return { message: `email updated to ${email}` };
+
+    // TODO: send email
   }
 }

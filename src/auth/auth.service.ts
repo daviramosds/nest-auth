@@ -8,17 +8,17 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
 import { authenticator } from 'otplib';
+import { UserService } from 'src/user/user.service';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  Login2FADTO,
   LoginDTO,
   PasswordForgotDTO,
   PasswordResetDTO,
-  Login2FADTO,
 } from './dto';
 
 @Injectable()
@@ -28,6 +28,7 @@ export class AuthService {
     private jwt: JwtService,
     private nodemailer: NodemailerService,
     private config: ConfigService,
+    private userService: UserService,
   ) {}
 
   async signJwt(payload: { sub: string }, ip: string): Promise<string> {
@@ -36,7 +37,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
-    const ipInfo = await geoip.lookup('189.11.168.152');
+    const ipInfo = await geoip.lookup(ip);
     // const ipInfo = await geoip.lookup(ip);
 
     await this.prisma.jwt.create({
@@ -58,17 +59,6 @@ export class AuthService {
     return jwt;
   }
 
-  validateUser(user: User) {
-    if (!user) {
-      // user doest not exist
-      throw new NotFoundException('User does not exist');
-    }
-
-    if (!user.verification.status) {
-      throw new UnauthorizedException('This user is not verified');
-    }
-  }
-
   async login(dto: LoginDTO, ip: string, test?: boolean) {
     const { username, password } = dto;
 
@@ -78,7 +68,7 @@ export class AuthService {
       },
     });
 
-    this.validateUser(user);
+    this.userService.validateUser(user);
 
     if (!bcrypt.compareSync(password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
@@ -159,7 +149,7 @@ export class AuthService {
       },
     });
 
-    this.validateUser(user);
+    this.userService.validateUser(user);
 
     if (!bcrypt.compareSync(password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
