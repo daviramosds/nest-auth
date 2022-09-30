@@ -27,8 +27,11 @@ export class UserService {
   async create(dto: CreateUserDTO, test: boolean) {
     const { name, lastname, username, email, password } = dto;
 
+    // 0.338ms
     const tokenExpires = new Date();
     tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
+
+    // 226ms
 
     const usernameExist = await this.prisma.user.findFirst({
       where: {
@@ -40,6 +43,7 @@ export class UserService {
       throw new HttpException('Username already exist', HttpStatus.CONFLICT);
     }
 
+    // 22ms
     const emailExist = await this.prisma.user.findFirst({
       where: {
         email: email,
@@ -52,6 +56,7 @@ export class UserService {
 
     const verificationToken = String(Math.floor(10000 + Math.random() * 90000));
 
+    console.time();
     const user = await this.prisma.user.create({
       data: {
         name,
@@ -83,6 +88,7 @@ export class UserService {
         },
       },
     });
+    console.timeEnd();
 
     delete user.password;
 
