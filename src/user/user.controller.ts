@@ -71,6 +71,8 @@ export class UserController {
     return this.userService.disable2FA(req.user, type);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/email')
   updateEmail(@Body() updateEmailDTO: UpdateEmailDTO) {
     this.userService.updateEmail(updateEmailDTO);

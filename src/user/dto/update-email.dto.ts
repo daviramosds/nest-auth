@@ -6,4 +6,9 @@ export class UpdateEmailDTO {
   @IsString()
   @IsNotEmpty()
   email: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }
