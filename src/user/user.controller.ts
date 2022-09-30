@@ -75,6 +75,6 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Patch('/email')
   updateEmail(@Body() updateEmailDTO: UpdateEmailDTO) {
-    this.userService.updateEmail(updateEmailDTO);
+    return this.userService.updateEmail(updateEmailDTO);
   }
 }
