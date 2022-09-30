@@ -18,6 +18,7 @@ import {
   DeleteUserDTO,
   Verify2FADTO,
   VerifyUserDTO,
+  UpdateEmailDTO,
 } from './dto';
 import { UserService } from './user.service';
 
@@ -68,5 +69,10 @@ export class UserController {
   @Patch('/2fa/disable/:type')
   async disable2FA(@Req() req: Request, @Param('type') type) {
     return this.userService.disable2FA(req.user, type);
+  }
+
+  @Patch('/email')
+  updateEmail(@Body() updateEmailDTO: UpdateEmailDTO) {
+    this.userService.updateEmail(updateEmailDTO);
   }
 }

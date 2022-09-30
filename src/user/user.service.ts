@@ -13,6 +13,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateUserDTO,
   DeleteUserDTO,
+  UpdateEmailDTO,
   Verify2FADTO,
   VerifyUserDTO,
 } from './dto';
@@ -319,5 +320,9 @@ export class UserService {
     return {
       message: `2FA with ${type} is disabled`,
     };
+  }
+
+  async updateEmail(dto: UpdateEmailDTO) {
+    return dto;
   }
 }
