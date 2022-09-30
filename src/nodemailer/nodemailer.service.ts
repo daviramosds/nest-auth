@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import { resolve } from 'path';
+import * as handlebars from 'handlebars';
+import * as fs from 'fs';
 
 interface SendMailInterface {
   to: string;
   subject: string;
-  body: string;
+  body?: string;
+  template?: string;
+  params?: object;
 }
 
 @Injectable()
 export class NodemailerService {
   constructor(private config: ConfigService) {}
 
-  async sendMail({ to, subject, body }: SendMailInterface) {
+  async sendMail({ to, subject, body, params, template }: SendMailInterface) {
     const transport = nodemailer.createTransport({
       host: this.config.get('SMTP_HOST'),
       port: this.config.get('SMTP_PORT'),
@@ -22,11 +27,23 @@ export class NodemailerService {
       },
     });
 
+    const templatePath = resolve(
+      __dirname,
+      'templates',
+      `${template}.template.hbs`,
+    );
+
+    const templateFileContent = fs.readFileSync(templatePath).toString('utf8');
+
+    const mailTemplateParser = handlebars.compile(templateFileContent);
+
+    const html = mailTemplateParser(params);
+
     await transport.sendMail({
       from: 'Team <team@mail.domain>',
       to,
       subject,
-      html: body,
+      html,
     });
   }
 }
