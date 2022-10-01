@@ -1,7 +1,6 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -45,16 +44,13 @@ export class UserService {
     tokenExpires.setHours(tokenExpires.getHours() + 2); // add 2 hours from now
 
     // 226ms
-
     const usernameExist = await this.prisma.user.findFirst({
       where: {
         username: username,
       },
     });
 
-    if (usernameExist) {
-      throw new HttpException('Username already exist', HttpStatus.CONFLICT);
-    }
+    if (usernameExist) throw new ConflictException('Username already exist');
 
     // 22ms
     const emailExist = await this.prisma.user.findFirst({
@@ -63,9 +59,7 @@ export class UserService {
       },
     });
 
-    if (emailExist) {
-      throw new HttpException('Email already exist', HttpStatus.CONFLICT);
-    }
+    if (emailExist) throw new ConflictException('Email already exist');
 
     const verificationToken = String(Math.floor(10000 + Math.random() * 90000));
 
@@ -101,8 +95,6 @@ export class UserService {
       },
     });
 
-    delete user.password;
-
     this.nodemailer.sendMail({
       to: `<${email}>`,
       subject: 'Account Created',
@@ -129,16 +121,15 @@ export class UserService {
     });
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
 
     const isTokenExpired = new Date() > user.verification.tokenExpires;
 
-    if (isTokenExpired)
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    if (isTokenExpired) throw new UnauthorizedException('Invalid Token');
 
     if (!bcrypt.compareSync(dto.token, user.verification.token)) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      throw new UnauthorizedException('Invalid Token');
     }
 
     await this.prisma.user.update({
@@ -185,8 +176,9 @@ export class UserService {
     const $2fa = user.twoFactorAuthentication;
 
     if (type === 'email') {
-      if ($2fa.email.enabled)
-        throw new HttpException('Email 2FA is already enabled', 400);
+      if ($2fa.email.enabled) {
+        throw new BadRequestException('Email 2FA is already enabled');
+      }
 
       const token = String(Math.floor(10000 + Math.random() * 90000));
 
@@ -217,7 +209,7 @@ export class UserService {
 
     if (type == 'totp') {
       if ($2fa.totp.enabled)
-        throw new HttpException('TOTP 2FA is already enabled', 400);
+        throw new BadRequestException('TOTP 2FA is already enabled');
 
       const secret = authenticator.generateSecret();
 
@@ -248,12 +240,13 @@ export class UserService {
   async verify2FA(user: User, type: string, dto: Verify2FADTO) {
     const { token } = dto;
 
-    if (type != 'email' && type != 'totp')
-      throw new HttpException('Invalid type', 400);
-
-    const $2fa = user.twoFactorAuthentication.email;
+    if (type != 'email' && type != 'totp') {
+      throw new BadRequestException('Invalid type');
+    }
 
     if (type == 'email') {
+      const $2fa = user.twoFactorAuthentication.email;
+
       if (!$2fa.token) throw new UnauthorizedException('Invalid token');
 
       const isTokenExpired = new Date() > $2fa.tokenExpires;
@@ -342,8 +335,6 @@ export class UserService {
 
   async updateEmail(user: User, dto: UpdateEmailDTO) {
     const { email, password } = dto;
-
-    this.validateUser(user);
 
     if (!bcrypt.compareSync(password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
