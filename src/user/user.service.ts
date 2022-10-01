@@ -103,19 +103,6 @@ export class UserService {
 
     delete user.password;
 
-    // this.nodemailer.sendMail({
-    //   to: `<${email}>`,
-    //   subject: 'Account Created',
-    //   body: [
-    //     `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
-    //     `<p>Hello ${name}</p>`,
-    //     `<p>Your account ${email} was created, to be able to use your account, use the code below</p>`,
-    //     `<h1>${verificationToken}</h1>`,
-    //     `<p>if you have not created a account don't worry, the account will expire in few hours</p>`,
-    //     `</div>`,
-    //   ].join('\n'),
-    // });
-
     this.nodemailer.sendMail({
       to: `<${email}>`,
       subject: 'Account Created',
@@ -164,6 +151,16 @@ export class UserService {
           token: user.verification.token,
           tokenExpires: user.verification.tokenExpires,
         },
+      },
+    });
+
+    this.nodemailer.sendMail({
+      subject: 'Account Verified',
+      to: user.email,
+      template: 'verify-user',
+      params: {
+        name: user.name,
+        email: user.email,
       },
     });
 
