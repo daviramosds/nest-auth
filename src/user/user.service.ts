@@ -36,6 +36,7 @@ export class UserService {
     }
   }
 
+  // template
   async create(dto: CreateUserDTO, test: boolean) {
     const { name, lastname, username, email, password } = dto;
 
@@ -113,6 +114,7 @@ export class UserService {
     return { message: 'User created' };
   }
 
+  // template
   async verify(dto: VerifyUserDTO) {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -158,6 +160,7 @@ export class UserService {
     return { message: 'User verified' };
   }
 
+  // template
   async delete(user: User, dto: DeleteUserDTO) {
     if (!bcrypt.compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
@@ -166,6 +169,16 @@ export class UserService {
     await this.prisma.user.delete({
       where: {
         username: user.username,
+      },
+    });
+
+    this.nodemailer.sendMail({
+      to: `<${user.email}>`,
+      subject: 'Account Deleted',
+      template: 'delete-user',
+      params: {
+        name: user.name,
+        email: user.email,
       },
     });
 
@@ -202,6 +215,17 @@ export class UserService {
         },
       });
 
+      this.nodemailer.sendMail({
+        to: `<${user.email}>`,
+        subject: 'Enable 2FA',
+        template: 'enable-2fa',
+        params: {
+          name: user.name,
+          email: user.email,
+          method: type,
+        },
+      });
+
       if (test) return { message: 'done', token: token };
 
       return { message: 'done' };
@@ -226,6 +250,17 @@ export class UserService {
               },
             },
           },
+        },
+      });
+
+      this.nodemailer.sendMail({
+        to: `<${user.email}>`,
+        subject: 'Enable 2FA',
+        template: 'enable-2fa',
+        params: {
+          name: user.name,
+          email: user.email,
+          method: type,
         },
       });
 
