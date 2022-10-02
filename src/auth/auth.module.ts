@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Module({
   imports: [JwtModule.register({})],

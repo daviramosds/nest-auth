@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as geoip from 'geoip-lite';
 import { authenticator } from 'otplib';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -37,8 +37,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
-    const ipInfo = await geoip.lookup(ip);
-    // const ipInfo = await geoip.lookup(ip);
+    const ipInfo = await geoip.lookup('189.11.168.152');
 
     await this.prisma.jwt.create({
       data: {
