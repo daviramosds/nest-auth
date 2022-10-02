@@ -33,9 +33,16 @@ export class NodemailerService {
       `${template}.template.hbs`,
     );
 
+    const partialPath = resolve(__dirname, 'partials', 'head.hbs');
+
     const templateFileContent = fs.readFileSync(templatePath).toString('utf8');
 
     const mailTemplateParser = handlebars.compile(templateFileContent);
+
+    handlebars.registerPartial(
+      'head',
+      fs.readFileSync(partialPath).toString('utf8'),
+    );
 
     const html = mailTemplateParser(params);
 
