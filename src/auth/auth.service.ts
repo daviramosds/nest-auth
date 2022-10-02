@@ -37,7 +37,7 @@ export class AuthService {
       expiresIn: '1h',
     });
 
-    const ipInfo = await geoip.lookup('189.11.168.152');
+    const ipInfo = await geoip.lookup(ip);
 
     await this.prisma.jwt.create({
       data: {
@@ -114,13 +114,12 @@ export class AuthService {
       this.nodemailer.sendMail({
         to: `<${user.email}>`,
         subject: '2FA CODE',
-        body: [
-          `<div style="font-family: sans-serif; font-size: 16px; color: #111;">`,
-          `<p>Hello ${user.name}</p>`,
-          `<p>2FA CODE</p>`,
-          `<h1>${token}</h1>`,
-          `</div>`,
-        ].join('\n'),
+        template: 'login-2fa',
+        params: {
+          name: user.name,
+          method: 'email',
+          token: token,
+        },
       });
 
       if (test) return { message: 'To continue use email 2fa', token: token };
@@ -281,12 +280,14 @@ export class AuthService {
       throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
     }
 
+    const newPassword = bcrypt.hashSync(password, 5);
+
     await this.prisma.user.update({
       where: {
         username: username,
       },
       data: {
-        password: bcrypt.hashSync(password, 5),
+        password: newPassword,
       },
     });
 
