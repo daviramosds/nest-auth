@@ -24,8 +24,10 @@ describe('AppController (e2e)', () => {
     lastname: faker.name.lastName(),
     username: faker.internet.userName(),
     email: 'test@companymail.com',
-    password: faker.internet.password(),
+    password: '123',
   };
+
+  let user;
 
   let verificationToken;
   let passwordResetToken;
@@ -183,7 +185,7 @@ describe('AppController (e2e)', () => {
       secret: process.env.JWT_SECRET,
     });
 
-    await authService.retrieve(payload.sub);
+    user = await authService.retrieve(payload.sub);
   });
 
   it('should start password forgot', async () => {
@@ -205,6 +207,13 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  it('should update the email', async () => {
+    userService.updateEmail(user, {
+      email: createdUser.email,
+      password: createdUser.password,
+    });
+  });
+
   it('should delete the user', async () => {
     const user = await prismaService.user.findFirst({
       where: {
@@ -212,6 +221,6 @@ describe('AppController (e2e)', () => {
       },
     });
 
-    await userService.delete(user, { password: createdUser.password });
+    await userService.delete(user, { password: '123' });
   });
 });
