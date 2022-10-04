@@ -36,7 +36,6 @@ export class UserService {
     }
   }
 
-  // template
   async create(dto: CreateUserDTO, test: boolean) {
     const { name, lastname, username, email, password } = dto;
 
@@ -114,7 +113,6 @@ export class UserService {
     return { message: 'User created' };
   }
 
-  // template
   async verify(dto: VerifyUserDTO) {
     const user = await this.prisma.user.findUnique({
       where: {
@@ -160,13 +158,11 @@ export class UserService {
     return { message: 'User verified' };
   }
 
-  // template
   async delete(user: User, dto: DeleteUserDTO) {
     console.log(user.password, dto);
     if (!bcrypt.compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
     }
-
     await this.prisma.user.delete({
       where: {
         username: user.username,
