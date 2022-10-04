@@ -159,7 +159,6 @@ export class UserService {
   }
 
   async delete(user: User, dto: DeleteUserDTO) {
-    console.log(user.password, dto);
     if (!bcrypt.compareSync(dto.password, user.password)) {
       throw new UnauthorizedException('Password is incorrect');
     }
