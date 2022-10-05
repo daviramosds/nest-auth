@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { User as UserInterface } from '@prisma/client';
 
-import * as expressListRoutes from 'express-list-routes';
+// import * as expressListRoutes from 'express-list-routes';
 import * as compression from 'compression';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -34,6 +34,6 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 3333);
 
-  expressListRoutes(app.getHttpServer()._events.request._router);
+  // expressListRoutes(app.getHttpServer()._events.request._router);
 }
 bootstrap();
