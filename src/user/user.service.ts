@@ -14,6 +14,7 @@ import {
   CreateUserDTO,
   DeleteUserDTO,
   UpdateEmailDTO,
+  UpdatePasswordDTO,
   Verify2FADTO,
   VerifyUserDTO,
 } from './dto';
@@ -381,6 +382,29 @@ export class UserService {
     });
 
     return { message: `email updated to ${email}` };
+
+    // TODO: send email
+  }
+
+  async updatePassword(user: User, dto: UpdatePasswordDTO) {
+    const { newPassword, password } = dto;
+
+    if (!bcrypt.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    const passwordHash = bcrypt.hashSync(newPassword, 5);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: passwordHash,
+      },
+    });
+
+    return { message: `Your password was updated` };
 
     // TODO: send email
   }
