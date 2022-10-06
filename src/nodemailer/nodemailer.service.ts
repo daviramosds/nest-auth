@@ -8,8 +8,7 @@ import * as fs from 'fs';
 interface SendMailInterface {
   to: string;
   subject: string;
-  body?: string;
-  template?: string;
+  template: string;
   params?: object;
 }
 
@@ -17,7 +16,7 @@ interface SendMailInterface {
 export class NodemailerService {
   constructor(private config: ConfigService) {}
 
-  async sendMail({ to, subject, body, params, template }: SendMailInterface) {
+  async sendMail({ to, subject, template, params }: SendMailInterface) {
     const transport = nodemailer.createTransport({
       host: this.config.get('SMTP_HOST'),
       port: this.config.get('SMTP_PORT'),
