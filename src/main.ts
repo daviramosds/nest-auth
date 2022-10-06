@@ -7,10 +7,12 @@ import { User as UserInterface } from '@prisma/client';
 
 // import * as expressListRoutes from 'express-list-routes';
 import * as compression from 'compression';
+import * as csurf from 'csurf';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 
 declare global {
   namespace Express {
@@ -22,8 +24,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe());
+  app.use(helmet());
   app.use(compression());
+  app.use(csurf());
+
+  app.useGlobalPipes(new ValidationPipe());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Nest Auth API')
