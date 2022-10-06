@@ -17,6 +17,7 @@ import {
   CreateUserDTO,
   DeleteUserDTO,
   UpdateEmailDTO,
+  UpdatePasswordDTO,
   Verify2FADTO,
   VerifyUserDTO,
 } from './dto';
@@ -79,5 +80,15 @@ export class UserController {
     @Body() updateEmailDTO: UpdateEmailDTO,
   ) {
     return this.userService.updateEmail(user, updateEmailDTO);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/password')
+  updatePassword(
+    @Req() { user }: Request,
+    @Body() updatePasswordDTO: UpdatePasswordDTO,
+  ) {
+    return this.userService.updatePassword(user, updatePasswordDTO);
   }
 }
