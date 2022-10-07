@@ -18,6 +18,7 @@ import {
   DeleteUserDTO,
   UpdateEmailDTO,
   UpdatePasswordDTO,
+  UpdateUserDTO,
   Verify2FADTO,
   VerifyUserDTO,
 } from './dto';
@@ -70,6 +71,13 @@ export class UserController {
   @Patch('/2fa/disable/:type')
   async disable2FA(@Req() req: Request, @Param('type') type) {
     return this.userService.disable2FA(req.user, type);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/')
+  updateUser(@Req() { user }: Request, @Body() updateUserDTO: UpdateUserDTO) {
+    return { message: 'user updated' };
   }
 
   @ApiBearerAuth()
