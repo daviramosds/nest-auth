@@ -15,6 +15,7 @@ import {
   DeleteUserDTO,
   UpdateEmailDTO,
   UpdatePasswordDTO,
+  UpdateUserDTO,
   Verify2FADTO,
   VerifyUserDTO,
 } from './dto';
@@ -407,5 +408,9 @@ export class UserService {
     return { message: `Your password was updated` };
 
     // TODO: send email
+  }
+
+  async updateUser(user: User, dto: UpdateUserDTO) {
+    return { message: 'user updated' };
   }
 }

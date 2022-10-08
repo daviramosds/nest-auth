@@ -77,7 +77,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Patch('/')
   updateUser(@Req() { user }: Request, @Body() updateUserDTO: UpdateUserDTO) {
-    return { message: 'user updated' };
+    return this.userService.updateUser(user, updateUserDTO);
   }
 
   @ApiBearerAuth()
