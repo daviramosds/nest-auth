@@ -411,6 +411,15 @@ export class UserService {
   }
 
   async updateUser(user: User, dto: UpdateUserDTO) {
+    this.validateUser(user);
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: dto,
+    });
+
     return { message: 'user updated' };
   }
 }
