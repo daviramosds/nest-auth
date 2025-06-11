@@ -40,9 +40,8 @@ A full-featured User Management REST API built with [NestJS](https://nestjs.com/
 - src
   - auth/          # Authentication module (JWT, guards, strategies)
   - user/          # User management module (CRUD, profiles)
-  - common/        # Shared utilities and interceptors
   - prisma/        # Database connection and Prisma schema
-  - mail/          # Email service for notifications (SendGrid, SMTP, etc)
+  - nodemailer/          # Email service for notifications (SendGrid, SMTP, etc)
 - prisma/
   - schema.prisma  # Prisma schema definitions
 - .env             # Environment configuration
